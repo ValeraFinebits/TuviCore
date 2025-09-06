@@ -234,7 +234,7 @@ namespace SecurityManagementTests
 
                 var pgpKeys = manager.GetPublicPgpKeysInfo();
                 Assert.That(
-                    pgpKeys.Any(k => k.UserIdentity.Contains("remove@example.com", StringComparison.Ordinal)),
+                    pgpKeys.Any(k => k.UserIdentity.Equals("remove@example.com", StringComparison.Ordinal)),
                     Is.True,
                     "Pgp key was not created"
                 );
@@ -243,7 +243,7 @@ namespace SecurityManagementTests
 
                 pgpKeys = manager.GetPublicPgpKeysInfo();
                 Assert.That(
-                    pgpKeys.All(k => !k.UserIdentity.Contains("remove@example.com", StringComparison.Ordinal)),
+                    pgpKeys.All(k => !k.UserIdentity.Equals("remove@example.com", StringComparison.Ordinal)),
                     Is.True,
                     "Pgp key was not removed"
                 );
@@ -268,7 +268,7 @@ namespace SecurityManagementTests
 
                 var pgpKeys = manager.GetPublicPgpKeysInfo();
                 Assert.That(
-                    pgpKeys.Any(k => k.UserIdentity.Contains("remove2@example.com", StringComparison.Ordinal)),
+                    pgpKeys.Any(k => k.UserIdentity.Equals("remove2@example.com", StringComparison.Ordinal)),
                     Is.True,
                     "Pgp key was not created"
                 );
@@ -277,7 +277,7 @@ namespace SecurityManagementTests
 
                 pgpKeys = manager.GetPublicPgpKeysInfo();
                 Assert.That(
-                    pgpKeys.All(k => !k.UserIdentity.Contains("remove2@example.com", StringComparison.Ordinal)),
+                    pgpKeys.All(k => !k.UserIdentity.Equals("remove2@example.com", StringComparison.Ordinal)),
                     Is.True,
                     "Pgp key was not removed"
                 );
@@ -316,7 +316,7 @@ namespace SecurityManagementTests
                 // (service keys are excluded from GetPublicPgpKeysInfo by IsServiceKey method)
                 var pgpKeys = manager.GetPublicPgpKeysInfo();
                 // We expect the same behavior as before - service keys don't show up in public keys list
-                Assert.That(pgpKeys.All(k => !k.UserIdentity.Contains("backup@test", StringComparison.Ordinal)), Is.True);
+                Assert.That(pgpKeys.All(k => !k.UserIdentity.Equals("backup@test", StringComparison.Ordinal)), Is.True);
             }
         }
 
@@ -341,7 +341,7 @@ namespace SecurityManagementTests
                 // (service keys are excluded from GetPublicPgpKeysInfo by IsServiceKey method)
                 var pgpKeys = manager.GetPublicPgpKeysInfo();
                 // We expect the same behavior as before - service keys don't show up in public keys list
-                Assert.That(pgpKeys.All(k => !k.UserIdentity.Contains("backup@test", StringComparison.Ordinal)), Is.True);
+                Assert.That(pgpKeys.All(k => !k.UserIdentity.Equals("backup@test", StringComparison.Ordinal)), Is.True);
             }
         }
 
@@ -382,9 +382,9 @@ namespace SecurityManagementTests
                 pgpKeys = manager.GetPublicPgpKeysInfo();
                 
                 // All keys should be removed
-                Assert.That(pgpKeys.All(k => !k.UserIdentity.Contains("test@regular.com", StringComparison.Ordinal)), Is.True);
-                Assert.That(pgpKeys.All(k => !k.UserIdentity.Contains(hybridEmail.Address, StringComparison.Ordinal)), Is.True);
-                Assert.That(pgpKeys.All(k => !k.UserIdentity.Contains(decEmail.Address, StringComparison.Ordinal)), Is.True);
+                Assert.That(pgpKeys.All(k => !k.UserIdentity.Equals("test@regular.com", StringComparison.Ordinal)), Is.True);
+                Assert.That(pgpKeys.All(k => !k.UserIdentity.Equals(hybridEmail.Address, StringComparison.Ordinal)), Is.True);
+                Assert.That(pgpKeys.All(k => !k.UserIdentity.Equals(decEmail.Address, StringComparison.Ordinal)), Is.True);
             }
         }
     }
