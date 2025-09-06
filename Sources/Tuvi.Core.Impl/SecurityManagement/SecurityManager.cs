@@ -346,7 +346,7 @@ namespace Tuvi.Core.Impl.SecurityManagement
                 throw new ArgumentNullException(nameof(email));
             }
 
-            string identity = email.Address;
+            string identity = email.GetPgpUserIdentity();
 
             // Skip removal if it matches any special service key identity
             foreach (var specialKey in _specialPgpKeyIdentities)

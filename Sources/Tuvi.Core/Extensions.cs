@@ -60,6 +60,16 @@ namespace Tuvi.Core
 
     public static class EmailAddressExtensions
     {
+        public static string GetPgpUserIdentity(this EmailAddress emailAddress)
+        {
+            if (emailAddress is null)
+            {
+                throw new ArgumentNullException(nameof(emailAddress));
+            }
+
+            return emailAddress.Address;
+        }
+
         public static UserIdentity ToUserIdentity(this EmailAddress emailAddress)
         {
             if (emailAddress is null)
