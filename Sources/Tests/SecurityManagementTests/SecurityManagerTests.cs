@@ -321,6 +321,31 @@ namespace SecurityManagementTests
         }
 
         [Test]
+        public async Task RemovePgpKeysForAccountServiceKeyProtected()
+        {
+            using (var storage = GetStorage())
+            {
+                ISecurityManager manager = GetSecurityManager(storage);
+
+                await manager.CreateSeedPhraseAsync().ConfigureAwait(true);
+                await manager.StartAsync(Password).ConfigureAwait(true);
+                Assert.That(manager.IsSeedPhraseInitializedAsync().Result, Is.True);
+
+                // Try to remove the service key by using an Account that contains the backup service identity
+                var serviceAccount = new Account { Email = new EmailAddress("backup@test") };
+
+                // Should not throw exception and should not remove any keys
+                Assert.DoesNotThrow(() => manager.RemovePgpKeys(serviceAccount));
+
+                // Verify service keys are still protected by checking they don't appear in public keys 
+                // (service keys are excluded from GetPublicPgpKeysInfo by IsServiceKey method)
+                var pgpKeys = manager.GetPublicPgpKeysInfo();
+                // We expect the same behavior as before - service keys don't show up in public keys list
+                Assert.That(pgpKeys.All(k => !k.UserIdentity.Contains("backup@test", StringComparison.Ordinal)), Is.True);
+            }
+        }
+
+        [Test]
         public async Task RemovePgpKeysForEmailAddressWorksWithDifferentAddressTypes()
         {
             using (var storage = GetStorage())

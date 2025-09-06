@@ -336,7 +336,7 @@ namespace Tuvi.Core.Impl.SecurityManagement
                 throw new ArgumentNullException(nameof(account));
             }
 
-            _pgpContext.RemoveKeys(account.GetPgpUserIdentity());
+            RemovePgpKeys(account.Email);
         }
 
         public void RemovePgpKeys(EmailAddress email)
