@@ -351,7 +351,7 @@ namespace Tuvi.Core.Impl.SecurityManagement
             // Skip removal if it matches any special service key identity
             foreach (var specialKey in _specialPgpKeyIdentities)
             {
-                if (identity.Contains(specialKey.Value))
+                if (identity.Equals(specialKey.Value, StringComparison.Ordinal))
                 {
                     return; // Do not remove service keys
                 }
