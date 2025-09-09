@@ -29,6 +29,7 @@ using Tuvi.Core.Entities;
 using Tuvi.Core.Impl.SecurityManagement;
 using Tuvi.Core.Mail;
 using Tuvi.Core.Utils;
+using TuviPgpLibImpl;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Tuvi.Core.Mail.Tests")]
 namespace SecurityManagementTests
@@ -43,14 +44,20 @@ namespace SecurityManagementTests
 
         private static ISecurityManager GetSecurityManager(IDataStorage storage)
         {
-            var pgpContent = TemporalKeyStorage.GetTemporalContextAsync(storage).Result;
+            var pgpContext = TemporalKeyStorage.GetTemporalContextAsync(storage).Result;
+
+            return GetSecurityManager(storage, pgpContext);
+        }
+
+        private static ISecurityManager GetSecurityManager(IDataStorage storage, TuviPgpContext pgpContext)
+        {
             var messageProtectorMock = new Mock<IMessageProtector>();
             var backupProtectorMock = new Mock<IBackupProtector>();
             var publicKeyService = PublicKeyService.CreateDefault(PublicKeyService.NoOpNameResolver);
 
             var manager = SecurityManagerCreator.GetSecurityManager(
                     storage,
-                    pgpContent,
+                    pgpContext,
                     messageProtectorMock.Object,
                     backupProtectorMock.Object,
                     publicKeyService);
@@ -301,7 +308,8 @@ namespace SecurityManagementTests
         {
             using (var storage = GetStorage())
             {
-                ISecurityManager manager = GetSecurityManager(storage);
+                using var pgpContext = await TemporalKeyStorage.GetTemporalContextAsync(storage).ConfigureAwait(true);
+                ISecurityManager manager = GetSecurityManager(storage, pgpContext);
 
                 await manager.CreateSeedPhraseAsync().ConfigureAwait(true);
                 await manager.StartAsync(Password).ConfigureAwait(true);
@@ -322,10 +330,8 @@ namespace SecurityManagementTests
                 var regularKeyStillExists = pgpKeys.Any(k => k.UserIdentity.Equals("regular@example.com", StringComparison.Ordinal));
                 Assert.That(regularKeyStillExists, Is.False, "Regular key should be removed");
 
-                // Now test service key protection 
                 // We know service keys exist because trying to create them causes collision errors
-                // Get direct access to PGP context to verify service key exists (since GetPublicPgpKeysInfo filters it out)
-                using var pgpContext = await TemporalKeyStorage.GetTemporalContextAsync(storage).ConfigureAwait(true);
+                // Get direct access to PGP context to verify service key exists (since GetPublicPgpKeysInfo filters it out)                
                 var allKeys = pgpContext.GetPublicKeysInfo();
                 var serviceKeyExists = allKeys.Any(k => k.UserIdentity.Equals("backup@test", StringComparison.Ordinal));
                 Assert.That(serviceKeyExists, Is.True, "Service key should exist (created automatically during startup)");
@@ -346,7 +352,8 @@ namespace SecurityManagementTests
         {
             using (var storage = GetStorage())
             {
-                ISecurityManager manager = GetSecurityManager(storage);
+                using var pgpContext = await TemporalKeyStorage.GetTemporalContextAsync(storage).ConfigureAwait(true);
+                ISecurityManager manager = GetSecurityManager(storage, pgpContext);
 
                 await manager.CreateSeedPhraseAsync().ConfigureAwait(true);
                 await manager.StartAsync(Password).ConfigureAwait(true);
@@ -367,10 +374,8 @@ namespace SecurityManagementTests
                 var regularKeyStillExists = pgpKeys.Any(k => k.UserIdentity.Equals("regular2@example.com", StringComparison.Ordinal));
                 Assert.That(regularKeyStillExists, Is.False, "Regular key should be removed");
 
-                // Now test service key protection
                 // We know service keys exist because trying to create them causes collision errors
                 // Get direct access to PGP context to verify service key exists (since GetPublicPgpKeysInfo filters it out)
-                using var pgpContext = await TemporalKeyStorage.GetTemporalContextAsync(storage).ConfigureAwait(true);
                 var allKeys = pgpContext.GetPublicKeysInfo();
                 var serviceKeyExists = allKeys.Any(k => k.UserIdentity.Equals("backup@test", StringComparison.Ordinal));
                 Assert.That(serviceKeyExists, Is.True, "Service key should exist (created automatically during startup)");
@@ -421,7 +426,7 @@ namespace SecurityManagementTests
                 manager.RemovePgpKeys(decEmail);
 
                 pgpKeys = manager.GetPublicPgpKeysInfo();
-                
+
                 // All keys should be removed
                 Assert.That(pgpKeys.All(k => !k.UserIdentity.Equals("test@regular.com", StringComparison.Ordinal)), Is.True);
                 Assert.That(pgpKeys.All(k => !k.UserIdentity.Equals(hybridEmail.Address, StringComparison.Ordinal)), Is.True);
