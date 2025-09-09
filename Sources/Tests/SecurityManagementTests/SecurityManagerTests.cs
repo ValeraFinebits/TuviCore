@@ -331,7 +331,7 @@ namespace SecurityManagementTests
                 Assert.That(regularKeyStillExists, Is.False, "Regular key should be removed");
 
                 // We know service keys exist because trying to create them causes collision errors
-                // Get direct access to PGP context to verify service key exists (since GetPublicPgpKeysInfo filters it out)                
+                // Get direct access to PGP context to verify service key exists (since GetPublicPgpKeysInfo filters it out)
                 var allKeys = pgpContext.GetPublicKeysInfo();
                 var serviceKeyExists = allKeys.Any(k => k.UserIdentity.Equals("backup@test", StringComparison.Ordinal));
                 Assert.That(serviceKeyExists, Is.True, "Service key should exist (created automatically during startup)");
