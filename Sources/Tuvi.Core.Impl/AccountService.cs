@@ -379,7 +379,6 @@ namespace Tuvi.Core.Impl
             newFolder.AccountEmail = Account.Email;
             newFolder.AccountId = Account.Id;
 
-            // Update local folder structure
             await UpdateFolderStructureAsync(cancellationToken).ConfigureAwait(false);
 
             return newFolder;
