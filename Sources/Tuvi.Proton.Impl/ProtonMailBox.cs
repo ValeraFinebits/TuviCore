@@ -1122,8 +1122,8 @@ namespace Tuvi.Proton
 
         public Task<Folder> CreateFolderAsync(string folderName, CancellationToken cancellationToken = default)
         {
-            // Proton Mail folder creation is not supported
-            throw new NotSupportedException("Proton Mail folder creation does not support.");
+            // Proton Mail does not support folder creation
+            throw new NotSupportedException("Proton Mail does not support folder creation.");
         }
 
         #endregion
