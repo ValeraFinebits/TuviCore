@@ -1122,7 +1122,7 @@ namespace Tuvi.Proton
 
         public Task<Folder> CreateFolderAsync(string folderName, CancellationToken cancellationToken = default)
         {
-            // ProtonMail uses labels instead of folders, and folder creation is not supported via their API
+            // Proton Mail folder creation is not supported
             // in the same way as standard IMAP. For now, throw NotSupportedException.
             throw new NotSupportedException("ProtonMail does not support folder creation via this API. Use labels instead.");
         }
