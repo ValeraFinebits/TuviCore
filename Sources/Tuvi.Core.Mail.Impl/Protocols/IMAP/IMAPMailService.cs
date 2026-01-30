@@ -1275,7 +1275,13 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
 
             async Task<Folder> DoCreateFolderAsync()
             {
-                var personalNamespace = ImapClient.PersonalNamespaces[0];
+                var personalNamespaces = ImapClient.PersonalNamespaces;
+                if (personalNamespaces == null || personalNamespaces.Count == 0)
+                {
+                    throw new InvalidOperationException("IMAP server does not define any personal namespaces.");
+                }
+
+                var personalNamespace = personalNamespaces[0];
                 var parentFolder = await ImapClient.GetFolderAsync(personalNamespace.Path, cancellationToken).ConfigureAwait(false);
                 var createdFolder = await parentFolder.CreateAsync(folderName, true, cancellationToken).ConfigureAwait(false);
 
