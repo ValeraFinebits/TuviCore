@@ -1246,7 +1246,6 @@ namespace Tuvi.Core.Impl
             var accountService = await GetAccountServiceAsync(accountEmail, cancellationToken).ConfigureAwait(false);
             var newFolder = await accountService.CreateFolderAsync(folderName, cancellationToken).ConfigureAwait(false);
 
-            // Emit event for UI updates
             FolderCreated?.Invoke(this, new FolderCreatedEventArgs(newFolder, accountEmail));
 
             return newFolder;
