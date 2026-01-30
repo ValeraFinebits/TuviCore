@@ -75,6 +75,7 @@ namespace Tuvi.Core.Tests
                 .ReturnsAsync(new List<Folder>());
             mailBoxMock.Setup(m => m.GetDefaultInboxFolderAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new Folder("INBOX", FolderAttributes.Inbox));
+            mailBoxMock.Setup(m => m.HasFolderCounters).Returns(true);
 
             mailBoxFactoryMock.Setup(f => f.CreateMailBox(It.IsAny<Account>()))
                 .Returns(mailBoxMock.Object);
@@ -232,6 +233,116 @@ namespace Tuvi.Core.Tests
 
             // Assert - Verify that GetFoldersStructureAsync is called during folder structure update
             mailBoxMock.Verify(m => m.GetFoldersStructureAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        }
+
+        [Test]
+        public void CreateFolderAsync_ProtonMailAccount_ShouldThrowNotSupportedException()
+        {
+            // Arrange
+            var protonAccount = new Account
+            {
+                Id = 1,
+                Email = new EmailAddress("user@protonmail.com"),
+                Type = MailBoxType.Proton,
+                IncomingServerAddress = "127.0.0.1",
+                OutgoingServerAddress = "127.0.0.1",
+                IncomingServerPort = 1143,
+                OutgoingServerPort = 1025,
+                AuthData = new BasicAuthData() { Password = "test" }
+            };
+            var accountsList = new List<Account>() { protonAccount };
+
+            var securityManagerMock = InitMockSecurityManager();
+            var mailBoxFactoryMock = new Mock<IMailBoxFactory>();
+            var mailServerTesterMock = new Mock<IMailServerTester>();
+            var dataStorageMock = new Mock<IDataStorage>();
+            var mailBoxMock = new Mock<IMailBox>();
+            var backupManager = new Mock<IBackupManager>();
+            var credentialsManager = new Mock<ICredentialsManager>();
+            var decStorageClient = new Mock<IDecStorageClient>();
+
+            dataStorageMock.Setup(a => a.GetAccountsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(accountsList);
+            dataStorageMock.Setup(a => a.GetAccountAsync(It.IsAny<EmailAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(protonAccount);
+
+            mailBoxMock.Setup(m => m.CreateFolderAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new NotSupportedException("ProtonMail does not support folder creation via this API. Use labels instead."));
+            mailBoxMock.Setup(m => m.GetFoldersStructureAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Folder>());
+            mailBoxMock.Setup(m => m.GetDefaultInboxFolderAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Folder("INBOX", FolderAttributes.Inbox));
+
+            mailBoxFactoryMock.Setup(f => f.CreateMailBox(It.IsAny<Account>()))
+                .Returns(mailBoxMock.Object);
+
+            using var core = TuviCoreCreator.CreateTuviMailCore(
+                mailBoxFactoryMock.Object,
+                mailServerTesterMock.Object,
+                dataStorageMock.Object,
+                securityManagerMock.Object,
+                backupManager.Object,
+                credentialsManager.Object,
+                new ImplementationDetailsProvider("Test seed", "Test.Package", "backup@test"),
+                decStorageClient.Object);
+
+            // Act & Assert
+            Assert.ThrowsAsync<NotSupportedException>(async () =>
+                await core.CreateFolderAsync(protonAccount.Email, "TestFolder").ConfigureAwait(false));
+        }
+
+        [Test]
+        public void CreateFolderAsync_DecAccount_ShouldThrowNotSupportedException()
+        {
+            // Arrange
+            var decAccount = new Account
+            {
+                Id = 1,
+                Email = new EmailAddress("user@eppie.io"),
+                Type = MailBoxType.Dec,
+                IncomingServerAddress = "127.0.0.1",
+                OutgoingServerAddress = "127.0.0.1",
+                IncomingServerPort = 1143,
+                OutgoingServerPort = 1025,
+                AuthData = new BasicAuthData() { Password = "test" }
+            };
+            var accountsList = new List<Account>() { decAccount };
+
+            var securityManagerMock = InitMockSecurityManager();
+            var mailBoxFactoryMock = new Mock<IMailBoxFactory>();
+            var mailServerTesterMock = new Mock<IMailServerTester>();
+            var dataStorageMock = new Mock<IDataStorage>();
+            var mailBoxMock = new Mock<IMailBox>();
+            var backupManager = new Mock<IBackupManager>();
+            var credentialsManager = new Mock<ICredentialsManager>();
+            var decStorageClient = new Mock<IDecStorageClient>();
+
+            dataStorageMock.Setup(a => a.GetAccountsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(accountsList);
+            dataStorageMock.Setup(a => a.GetAccountAsync(It.IsAny<EmailAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(decAccount);
+
+            mailBoxMock.Setup(m => m.CreateFolderAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new NotSupportedException("DEC protocol does not support folder creation."));
+            mailBoxMock.Setup(m => m.GetFoldersStructureAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Folder>());
+            mailBoxMock.Setup(m => m.GetDefaultInboxFolderAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Folder("INBOX", FolderAttributes.Inbox));
+
+            mailBoxFactoryMock.Setup(f => f.CreateMailBox(It.IsAny<Account>()))
+                .Returns(mailBoxMock.Object);
+
+            using var core = TuviCoreCreator.CreateTuviMailCore(
+                mailBoxFactoryMock.Object,
+                mailServerTesterMock.Object,
+                dataStorageMock.Object,
+                securityManagerMock.Object,
+                backupManager.Object,
+                credentialsManager.Object,
+                new ImplementationDetailsProvider("Test seed", "Test.Package", "backup@test"),
+                decStorageClient.Object);
+
+            // Act & Assert
+            Assert.ThrowsAsync<NotSupportedException>(async () =>
+                await core.CreateFolderAsync(decAccount.Email, "TestFolder").ConfigureAwait(false));
         }
     }
 }

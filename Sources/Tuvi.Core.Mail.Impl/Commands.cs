@@ -530,6 +530,11 @@ namespace Tuvi.Core.Mail.Impl
         {
             return await Receiver.CreateFolderAsync(FolderName, cancellationToken).ConfigureAwait(false);
         }
+
+        protected override string GetUniqueCommandIdentifier(string email)
+        {
+            return this.GetType().Name + email + FolderName;
+        }
     }
 
     internal class FlagMessagesCommand : ReceiverCommand<bool>
