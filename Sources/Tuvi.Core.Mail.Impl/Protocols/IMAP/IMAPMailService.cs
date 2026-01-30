@@ -780,12 +780,11 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
 
             async Task AppendMessageAsync()
             {
-                var sentFolder = GetSentFolder();
+                var sentFolder = await GetOrCreateSpecialFolderAsync(SpecialFolder.Sent, MailKit.FolderAttributes.Sent, "Sent", cancellationToken).ConfigureAwait(false);
 
                 if (sentFolder is null)
                 {
-                    // TODO: Need to create Sent folder?
-                    this.Log().LogWarning("Sent folder was not found, skipping appending the sent message.");
+                    this.Log().LogWarning("Sent folder was not found and could not be created, skipping appending the sent message.");
                     return;
                 }
 
@@ -849,6 +848,32 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
 
             var personal = ImapClient.GetFolder(ImapClient.PersonalNamespaces[0]);
             return personal.GetSubfolders(false).FirstOrDefault(x => x.Attributes.HasFlag(attribute));
+        }
+
+        private async Task<IMailFolder> GetOrCreateSpecialFolderAsync(SpecialFolder specialFolder, MailKit.FolderAttributes attribute, string defaultFolderName, CancellationToken cancellationToken)
+        {
+            var folder = GetSpecialFolder(specialFolder, attribute);
+            if (folder != null)
+            {
+                return folder;
+            }
+
+            this.Log().LogInformation("Special folder {SpecialFolder} not found, attempting to create it.", specialFolder);
+
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
+            {
+                var personal = ImapClient.GetFolder(ImapClient.PersonalNamespaces[0]);
+                folder = await personal.CreateAsync(defaultFolderName, specialFolder, cancellationToken).ConfigureAwait(false);
+                this.Log().LogInformation("Successfully created special folder {SpecialFolder} with name {FolderName}.", specialFolder, defaultFolderName);
+                return folder;
+            }
+            catch (Exception ex)
+            {
+                this.Log().LogError(ex, "Failed to create special folder {SpecialFolder}.", specialFolder);
+                return null;
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         public override async Task<Message> AppendDraftMessageAsync(Message message, CancellationToken cancellationToken)
@@ -926,12 +951,11 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
 
             async Task<Message> DoReplaceDraftMessageAsync()
             {
-                var draftsFolder = GetDraftsFolder();
+                var draftsFolder = await GetOrCreateSpecialFolderAsync(SpecialFolder.Drafts, MailKit.FolderAttributes.Drafts, "Drafts", cancellationToken).ConfigureAwait(false);
 
                 if (draftsFolder is null)
                 {
-                    // TODO: Need to create Drafts folder?
-                    this.Log().LogWarning("Drafts folder was not found, skipping the draft message update.");
+                    this.Log().LogWarning("Drafts folder was not found and could not be created, skipping the draft message update.");
                     return message;
                 }
 
