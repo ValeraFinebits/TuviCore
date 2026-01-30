@@ -1243,5 +1243,45 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
                 await RestoreConnectionAsync(cancellationToken).ConfigureAwait(false);
             }
         }
+
+        public override async Task<Folder> CreateFolderAsync(string folderName, CancellationToken cancellationToken)
+        {
+            await EnsureConnectionAliveAsync(cancellationToken).ConfigureAwait(false);
+
+            if (string.IsNullOrWhiteSpace(folderName))
+            {
+                throw new ArgumentException("Folder name cannot be empty", nameof(folderName));
+            }
+
+            try
+            {
+                return await DoCreateFolderAsync().ConfigureAwait(false);
+            }
+            catch (System.IO.IOException)
+            {
+                await RestoreConnectionAsync(cancellationToken).ConfigureAwait(false);
+                return await DoCreateFolderAsync().ConfigureAwait(false);
+            }
+            catch (MailKit.Net.Imap.ImapCommandException)
+            {
+                await RestoreConnectionAsync(cancellationToken).ConfigureAwait(false);
+                return await DoCreateFolderAsync().ConfigureAwait(false);
+            }
+            catch (MailKit.Net.Imap.ImapProtocolException)
+            {
+                await RestoreConnectionAsync(cancellationToken).ConfigureAwait(false);
+                return await DoCreateFolderAsync().ConfigureAwait(false);
+            }
+
+            async Task<Folder> DoCreateFolderAsync()
+            {
+                var personalNamespace = ImapClient.PersonalNamespaces[0];
+                var parentFolder = await ImapClient.GetFolderAsync(personalNamespace.Path, cancellationToken).ConfigureAwait(false);
+                var createdFolder = await parentFolder.CreateAsync(folderName, true, cancellationToken).ConfigureAwait(false);
+
+                await createdFolder.StatusAsync(StatusItems.Unread | StatusItems.Count, cancellationToken).ConfigureAwait(false);
+                return createdFolder.ToTuviMailFolder();
+            }
+        }
     }
 }
