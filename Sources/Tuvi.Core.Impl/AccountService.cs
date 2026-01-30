@@ -374,7 +374,6 @@ namespace Tuvi.Core.Impl
                 throw new ArgumentException("Folder name cannot be empty", nameof(folderName));
             }
 
-            // Create folder on server
             var newFolder = await MailBox.CreateFolderAsync(folderName, cancellationToken).ConfigureAwait(false);
             newFolder.AccountEmail = Account.Email;
             newFolder.AccountId = Account.Id;
