@@ -108,6 +108,14 @@ namespace Tuvi.Core.Tests
             Assert.That(eventArgs.Folder.FullName, Is.EqualTo("NewFolderName"));
             Assert.That(eventArgs.AccountEmail, Is.EqualTo(accountsList[0].Email));
             Assert.That(eventArgs.OldName, Is.EqualTo("OldFolderName"));
+
+            // Verify UpdateFolderPathAsync was called to migrate messages
+            dataStorageMock.Verify(d => d.UpdateFolderPathAsync(
+                accountsList[0].Email,
+                "OldFolderName",
+                "NewFolderName",
+                It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [Test]
