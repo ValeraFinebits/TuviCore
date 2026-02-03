@@ -494,6 +494,13 @@ namespace Tuvi.Core.Dec.Impl
             }
         }
 
+        public Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken = default)
+        {
+            // Decentralized mailbox doesn't support folder deletion
+            // For now, throw NotSupportedException
+            throw new NotSupportedException("Folder deletion is not supported for decentralized mailboxes.");
+        }
+
         public void Dispose() { }
     }
 }

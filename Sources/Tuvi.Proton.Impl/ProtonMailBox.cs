@@ -476,6 +476,13 @@ namespace Tuvi.Proton
             await client.LabelMessagesAsync(messages.Select(x => x.MessageId).ToList(), targetLabelId, cancellationToken).ConfigureAwait(false);
         }
 
+        public Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken = default)
+        {
+            // Proton doesn't support folder deletion through the API in the same way as IMAP
+            // For now, throw NotSupportedException
+            throw new NotSupportedException("Folder deletion is not supported for Proton Mail.");
+        }
+
         public async Task FlagMessagesAsync(IEnumerable<Core.Entities.Message> messages, CancellationToken cancellationToken)
         {
             var storedMessages = await _storage.GetMessagesAsync(_account.Id, messages.Select(x => x.Id).ToList(), cancellationToken).ConfigureAwait(false);

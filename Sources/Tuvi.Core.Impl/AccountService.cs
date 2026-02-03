@@ -42,6 +42,7 @@ namespace Tuvi.Core.Impl
         public event EventHandler<MessagesAttributeChangedEventArgs> MessagesIsFlaggedChanged;
         public event EventHandler<UnreadMessagesReceivedEventArgs> UnreadMessagesReceived;
         public event EventHandler<FolderMessagesReceivedEventArgs> MessagesReceived;
+        public event EventHandler<FolderDeletedEventArgs> FolderDeleted;
         public AccountService(Account account, IDataStorage dataStorage, IMailBox mailBox, IMessageProtector messageProtector)
         {
             Account = account;
@@ -365,6 +366,23 @@ namespace Tuvi.Core.Impl
             var remoteTask = MailBox.MoveMessagesAsync(uids, folder, targetFolder, cancellationToken);
             var localTask = DeleteLocalMessagesAsync(folder, uids, updateUnreadAndTotal: true, cancellationToken);
             await Task.WhenAll(localTask, remoteTask).ConfigureAwait(false);
+        }
+
+        public async Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken = default)
+        {
+            if (folder is null)
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+
+            // Delete folder from remote server
+            await MailBox.DeleteFolderAsync(folder, cancellationToken).ConfigureAwait(false);
+
+            // Delete folder from local storage
+            await DataStorage.DeleteFolderAsync(Account.Email, folder.FullName, cancellationToken).ConfigureAwait(false);
+
+            // Raise event
+            FolderDeleted?.Invoke(this, new FolderDeletedEventArgs(Account.Email, folder));
         }
 
         public Task PermanentDeleteMessageAsync(Message message, CancellationToken cancellationToken)

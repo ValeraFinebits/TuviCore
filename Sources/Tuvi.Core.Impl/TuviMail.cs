@@ -88,6 +88,7 @@ namespace Tuvi.Core.Impl
         public event EventHandler<ContactChangedEventArgs> ContactChanged;
         public event EventHandler<ContactDeletedEventArgs> ContactDeleted;
         public event EventHandler<EventArgs> WipeAllDataNeeded;
+        public event EventHandler<FolderDeletedEventArgs> FolderDeleted;
 
         public TuviMail(
             IMailBoxFactory mailBoxFactory,
@@ -488,6 +489,7 @@ namespace Tuvi.Core.Impl
             accountService.MessagesIsReadChanged += (sender, args) => MessagesIsReadChanged?.Invoke(sender, args);
             accountService.MessagesIsFlaggedChanged += (sender, args) => MessagesIsFlaggedChanged?.Invoke(sender, args);
             accountService.UnreadMessagesReceived += (sender, args) => UnreadMessagesReceived?.Invoke(sender, args);
+            accountService.FolderDeleted += (sender, args) => FolderDeleted?.Invoke(sender, args);
         }
 
         private IMailBox CreateMailBox(Account account)
@@ -1020,6 +1022,18 @@ namespace Tuvi.Core.Impl
                 var accountService = await GetAccountServiceAsync(folder.AccountEmail, cancellationToken).ConfigureAwait(true);
                 await accountService.DeleteMessagesAsync(folder, group.ToList(), cancellationToken).ConfigureAwait(true);
             }
+        }
+
+        public async Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken = default)
+        {
+            CheckDisposed();
+            if (folder is null)
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+
+            var accountService = await GetAccountServiceAsync(folder.AccountEmail, cancellationToken).ConfigureAwait(true);
+            await accountService.DeleteFolderAsync(folder, cancellationToken).ConfigureAwait(true);
         }
 
         public async Task RestoreFromBackupIfNeededAsync(Uri downloadUri)

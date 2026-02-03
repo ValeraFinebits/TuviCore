@@ -47,6 +47,7 @@ namespace Tuvi.Core
         event EventHandler<ContactChangedEventArgs> ContactChanged;
         event EventHandler<ContactDeletedEventArgs> ContactDeleted;
         event EventHandler<EventArgs> WipeAllDataNeeded;
+        event EventHandler<FolderDeletedEventArgs> FolderDeleted;
 
         Task TestMailServerAsync(string serverAddress, int serverPort, MailProtocol protocol, ICredentialsProvider credentialsProvider, CancellationToken cancellationToken = default);
 
@@ -134,5 +135,10 @@ namespace Tuvi.Core
         Task UpdateMessageProcessingResultAsync(Message message, string result, CancellationToken cancellationToken = default);
 
         Task<string> ClaimDecentralizedNameAsync(string name, Account account, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Delete folder from mailbox.
+        /// </summary>
+        Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken = default);
     }
 }

@@ -1198,6 +1198,37 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
             _forceReconnectLock.Dispose();
         }
 
+        public override async Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken)
+        {
+            await EnsureConnectionAliveAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await DoDeleteFolderAsync().ConfigureAwait(false);
+            }
+            catch (System.IO.IOException)
+            {
+                await RestoreConnectionAsync(cancellationToken).ConfigureAwait(false);
+                await DoDeleteFolderAsync().ConfigureAwait(false);
+            }
+            catch (MailKit.Net.Imap.ImapProtocolException)
+            {
+                await RestoreConnectionAsync(cancellationToken).ConfigureAwait(false);
+                await DoDeleteFolderAsync().ConfigureAwait(false);
+            }
+            catch (MailKit.Net.Imap.ImapCommandException)
+            {
+                await RestoreConnectionAsync(cancellationToken).ConfigureAwait(false);
+                await DoDeleteFolderAsync().ConfigureAwait(false);
+            }
+
+            async Task DoDeleteFolderAsync()
+            {
+                var mailFolder = await ImapClient.GetFolderAsync(folder.FullName, cancellationToken).ConfigureAwait(false);
+                await mailFolder.DeleteAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
+
         /// <summary>
         /// Safely close an IMAP folder. Swallows close-time network/protocol errors (data already fetched) and restores connection if needed.
         /// </summary>

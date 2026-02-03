@@ -181,6 +181,12 @@ namespace Tuvi.Core.Mail.Impl
             }
         }
 
+        public Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken = default)
+        {
+            DeleteFolderCommand deleteFolderCommand = new DeleteFolderCommand(Receiver, folder);
+            return deleteFolderCommand.RunCommandAsync(AccountSettings.Email.Address, cancellationToken);
+        }
+
         public void Dispose()
         {
             Sender.Dispose();

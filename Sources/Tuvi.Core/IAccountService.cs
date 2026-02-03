@@ -31,6 +31,7 @@ namespace Tuvi.Core
         event EventHandler<MessagesAttributeChangedEventArgs> MessagesIsFlaggedChanged;
         event EventHandler<UnreadMessagesReceivedEventArgs> UnreadMessagesReceived;
         event EventHandler<FolderMessagesReceivedEventArgs> MessagesReceived;
+        event EventHandler<FolderDeletedEventArgs> FolderDeleted;
 
         /// <summary>
         /// Send <paramref name="message"/> via given service.
@@ -149,5 +150,13 @@ namespace Tuvi.Core
         Task SynchronizeFolderAsync(Folder folder, bool full, CancellationToken cancellationToken);
 
         Task MoveMessagesAsync(Folder folder, Folder targetFolder, IReadOnlyList<Message> messages, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Delete folder from mailbox.
+        /// </summary>
+        /// <param name="folder">Folder to delete</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken = default);
     }
 }
