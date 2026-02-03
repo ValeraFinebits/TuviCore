@@ -1520,11 +1520,24 @@ ORDER BY Date DESC, FolderId ASC, Message.Id DESC";
                 var connection = db.Connection;
                 var oldPath = CreatePath(email, oldFolderName);
                 var newPath = CreatePath(email, newFolderName);
-                var messages = connection.Table<Entities.Message>().Where(x => x.Path == oldPath).ToList(ct);
+                var oldPathPrefix = oldPath + "\\";
+
+                // Update messages in the renamed folder and all its subfolders
+                // Get all messages for the account and filter by path
+                var allMessages = connection.Table<Entities.Message>().ToList(ct);
+                var messages = allMessages.Where(x => x.Path == oldPath || x.Path.StartsWith(oldPathPrefix, StringComparison.Ordinal)).ToList();
 
                 foreach (var message in messages)
                 {
-                    message.Path = newPath;
+                    // Replace the old folder path prefix with the new one
+                    if (message.Path == oldPath)
+                    {
+                        message.Path = newPath;
+                    }
+                    else if (message.Path.StartsWith(oldPathPrefix, StringComparison.Ordinal))
+                    {
+                        message.Path = newPath + message.Path.Substring(oldPath.Length);
+                    }
                     connection.Update(message);
                 }
             }, cancellationToken);
