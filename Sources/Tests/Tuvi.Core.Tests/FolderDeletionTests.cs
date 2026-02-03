@@ -392,6 +392,8 @@ namespace Tuvi.Core.Tests
             var trashFolder = new Folder("Trash", FolderAttributes.Trash);
             var draftFolder = new Folder("Drafts", FolderAttributes.Draft);
             var junkFolder = new Folder("Spam", FolderAttributes.Junk);
+            var importantFolder = new Folder("Important", FolderAttributes.Important);
+            var allFolder = new Folder("All", FolderAttributes.All);
 
             // Act & Assert
             Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -404,6 +406,10 @@ namespace Tuvi.Core.Tests
                 await core.DeleteFolderAsync(accountsList[0].Email, draftFolder).ConfigureAwait(false));
             Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await core.DeleteFolderAsync(accountsList[0].Email, junkFolder).ConfigureAwait(false));
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await core.DeleteFolderAsync(accountsList[0].Email, importantFolder).ConfigureAwait(false));
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await core.DeleteFolderAsync(accountsList[0].Email, allFolder).ConfigureAwait(false));
         }
     }
 }
