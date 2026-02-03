@@ -616,5 +616,45 @@ namespace Tuvi.Core.Tests
                                 new ImplementationDetailsProvider("Test seed", "Test.Package", "backup@test"),
                                 decStorageClient.Object);
         }
+
+        [Test]
+        public async Task DeleteFolderShouldDeleteFolderAndRaiseEvent()
+        {
+            using var dataStorage = await OpenDataStorageAsync().ConfigureAwait(true);
+            var mailBox = new Mock<IMailBox>();
+            mailBox.Setup(x => x.DeleteFolderAsync(It.IsAny<Folder>(), It.IsAny<CancellationToken>()))
+                   .Returns(Task.CompletedTask);
+            mailBox.Setup(x => x.GetFoldersStructureAsync(It.IsAny<CancellationToken>()))
+                   .ReturnsAsync(new List<Folder>()
+                   {
+                       new Folder("Inbox", FolderAttributes.Inbox),
+                       new Folder("TestFolder", FolderAttributes.None)
+                   });
+
+            using var core = CreateCore(dataStorage, mailBox.Object);
+            var account = GetTestEmailAccount();
+            await dataStorage.AddAccountAsync(account).ConfigureAwait(true);
+
+            var testFolder = new Folder("TestFolder", FolderAttributes.None)
+            {
+                AccountEmail = account.Email
+            };
+            account.FoldersStructure = new List<Folder> { account.DefaultInboxFolder, testFolder };
+            await dataStorage.UpdateAccountFolderStructureAsync(account, default).ConfigureAwait(true);
+
+            var deletedFolders = new List<Folder>();
+            core.FolderDeleted += (s, e) =>
+            {
+                deletedFolders.Add(e.Folder);
+            };
+
+            await core.DeleteFolderAsync(testFolder, default).ConfigureAwait(true);
+
+            Assert.That(deletedFolders.Count, Is.EqualTo(1));
+            Assert.That(deletedFolders[0].FullName, Is.EqualTo("TestFolder"));
+
+            // Verify mailbox DeleteFolderAsync was called
+            mailBox.Verify(x => x.DeleteFolderAsync(It.IsAny<Folder>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
     }
 }
