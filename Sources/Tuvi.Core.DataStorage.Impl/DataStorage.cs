@@ -1513,6 +1513,23 @@ ORDER BY Date DESC, FolderId ASC, Message.Id DESC";
             }, cancellationToken);
         }
 
+        public Task UpdateFolderPathAsync(EmailAddress email, string oldFolderName, string newFolderName, CancellationToken cancellationToken)
+        {
+            return WriteDatabaseAsync((db, ct) =>
+            {
+                var connection = db.Connection;
+                var oldPath = CreatePath(email, oldFolderName);
+                var newPath = CreatePath(email, newFolderName);
+                var messages = connection.Table<Entities.Message>().Where(x => x.Path == oldPath).ToList(ct);
+
+                foreach (var message in messages)
+                {
+                    message.Path = newPath;
+                    connection.Update(message);
+                }
+            }, cancellationToken);
+        }
+
         public Task DeleteMessageAsync(EmailAddress email, string folder, uint uid, bool updateUnreadAndTotal, CancellationToken cancellationToken)
         {
             return DeleteMessagesAsync(email, folder, new List<uint> { uid }, updateUnreadAndTotal, cancellationToken);

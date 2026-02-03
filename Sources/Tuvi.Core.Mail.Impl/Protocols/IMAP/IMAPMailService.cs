@@ -1363,7 +1363,6 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
             async Task<Folder> DoRenameFolderAsync()
             {
                 var imapFolder = await ImapClient.GetFolderAsync(folder.FullName, cancellationToken).ConfigureAwait(false);
-
                 // Get the parent folder and determine the new name
                 var parentFolder = imapFolder.ParentFolder;
                 if (parentFolder != null)
@@ -1379,20 +1378,15 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
                     {
                         throw new InvalidOperationException("IMAP server does not define any personal namespaces.");
                     }
-
                     var personalNamespace = personalNamespaces[0];
                     var personalFolder = await ImapClient.GetFolderAsync(personalNamespace.Path, cancellationToken).ConfigureAwait(false);
                     await imapFolder.RenameAsync(personalFolder, newName, cancellationToken).ConfigureAwait(false);
                 }
-
-                // Determine the new full path
-                var parentPath = parentFolder?.FullName;
-                var newFullName = string.IsNullOrEmpty(parentPath) ? newName : $"{parentPath}{imapFolder.DirectorySeparator}{newName}";
-
+                // After RenameAsync, MailKit updates imapFolder.FullName to the new canonical name
+                var renamedFullName = imapFolder.FullName;
                 // Fetch the renamed folder to get updated details
-                var renamedImapFolder = await ImapClient.GetFolderAsync(newFullName, cancellationToken).ConfigureAwait(false);
+                var renamedImapFolder = await ImapClient.GetFolderAsync(renamedFullName, cancellationToken).ConfigureAwait(false);
                 await renamedImapFolder.StatusAsync(StatusItems.Unread | StatusItems.Count, cancellationToken).ConfigureAwait(false);
-
                 return renamedImapFolder.ToTuviMailFolder();
             }
         }

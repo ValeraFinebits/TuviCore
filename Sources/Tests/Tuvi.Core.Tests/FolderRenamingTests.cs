@@ -247,5 +247,119 @@ namespace Tuvi.Core.Tests
             Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await core.RenameFolderAsync(accountsList[0].Email, inboxFolder, "NewName").ConfigureAwait(false));
         }
+
+        [Test]
+        public void RenameFolderAsyncProtonMailAccountShouldThrowNotSupportedException()
+        {
+            // Arrange
+            var protonAccount = new Account
+            {
+                Id = 1,
+                Email = new EmailAddress("user@protonmail.com"),
+                Type = MailBoxType.Proton,
+                IncomingServerAddress = "127.0.0.1",
+                OutgoingServerAddress = "127.0.0.1",
+                IncomingServerPort = 1143,
+                OutgoingServerPort = 1025,
+                AuthData = new BasicAuthData() { Password = "test" }
+            };
+            var accountsList = new List<Account>() { protonAccount };
+
+            var securityManagerMock = InitMockSecurityManager();
+            var mailBoxFactoryMock = new Mock<IMailBoxFactory>();
+            var mailServerTesterMock = new Mock<IMailServerTester>();
+            var dataStorageMock = new Mock<IDataStorage>();
+            var mailBoxMock = new Mock<IMailBox>();
+            var backupManager = new Mock<IBackupManager>();
+            var credentialsManager = new Mock<ICredentialsManager>();
+            var decStorageClient = new Mock<IDecStorageClient>();
+
+            dataStorageMock.Setup(a => a.GetAccountsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(accountsList);
+            dataStorageMock.Setup(a => a.GetAccountAsync(It.IsAny<EmailAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(protonAccount);
+
+            var testFolder = new Folder("TestFolder", FolderAttributes.None);
+
+            mailBoxMock.Setup(m => m.RenameFolderAsync(It.IsAny<Folder>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new NotSupportedException("Renaming folders in Proton Mail is not supported."));
+            mailBoxMock.Setup(m => m.GetFoldersStructureAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Folder>());
+            mailBoxMock.Setup(m => m.GetDefaultInboxFolderAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Folder("INBOX", FolderAttributes.Inbox));
+
+            mailBoxFactoryMock.Setup(f => f.CreateMailBox(It.IsAny<Account>()))
+                .Returns(mailBoxMock.Object);
+
+            using var core = TuviCoreCreator.CreateTuviMailCore(
+                mailBoxFactoryMock.Object,
+                mailServerTesterMock.Object,
+                dataStorageMock.Object,
+                securityManagerMock.Object,
+                backupManager.Object,
+                credentialsManager.Object,
+                new ImplementationDetailsProvider("Test seed", "Test.Package", "backup@test"),
+                decStorageClient.Object);
+
+            // Act & Assert
+            Assert.ThrowsAsync<NotSupportedException>(async () =>
+                await core.RenameFolderAsync(protonAccount.Email, testFolder, "NewName").ConfigureAwait(false));
+        }
+
+        [Test]
+        public void RenameFolderAsyncDecAccountShouldThrowNotSupportedException()
+        {
+            // Arrange
+            var decAccount = new Account
+            {
+                Id = 1,
+                Email = new EmailAddress("user@eppie.io"),
+                Type = MailBoxType.Dec,
+                IncomingServerAddress = "127.0.0.1",
+                OutgoingServerAddress = "127.0.0.1",
+                IncomingServerPort = 1143,
+                OutgoingServerPort = 1025,
+                AuthData = new BasicAuthData() { Password = "test" }
+            };
+            var accountsList = new List<Account>() { decAccount };
+
+            var securityManagerMock = InitMockSecurityManager();
+            var mailBoxFactoryMock = new Mock<IMailBoxFactory>();
+            var mailServerTesterMock = new Mock<IMailServerTester>();
+            var dataStorageMock = new Mock<IDataStorage>();
+            var mailBoxMock = new Mock<IMailBox>();
+            var backupManager = new Mock<IBackupManager>();
+            var credentialsManager = new Mock<ICredentialsManager>();
+            var decStorageClient = new Mock<IDecStorageClient>();
+
+            dataStorageMock.Setup(a => a.GetAccountsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(accountsList);
+            dataStorageMock.Setup(a => a.GetAccountAsync(It.IsAny<EmailAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(decAccount);
+
+            var testFolder = new Folder("TestFolder", FolderAttributes.None);
+
+            mailBoxMock.Setup(m => m.RenameFolderAsync(It.IsAny<Folder>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new NotSupportedException("DEC protocol does not support folder renaming."));
+            mailBoxMock.Setup(m => m.GetFoldersStructureAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Folder>());
+            mailBoxMock.Setup(m => m.GetDefaultInboxFolderAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Folder("INBOX", FolderAttributes.Inbox));
+
+            mailBoxFactoryMock.Setup(f => f.CreateMailBox(It.IsAny<Account>()))
+                .Returns(mailBoxMock.Object);
+
+            using var core = TuviCoreCreator.CreateTuviMailCore(
+                mailBoxFactoryMock.Object,
+                mailServerTesterMock.Object,
+                dataStorageMock.Object,
+                securityManagerMock.Object,
+                backupManager.Object,
+                credentialsManager.Object,
+                new ImplementationDetailsProvider("Test seed", "Test.Package", "backup@test"),
+                decStorageClient.Object);
+
+            // Act & Assert
+            Assert.ThrowsAsync<NotSupportedException>(async () =>
+                await core.RenameFolderAsync(decAccount.Email, testFolder, "NewName").ConfigureAwait(false));
+        }
     }
 }
