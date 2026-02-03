@@ -1128,7 +1128,7 @@ namespace Tuvi.Proton
 
         public Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken = default)
         {
-            throw new NotSupportedException("Proton Mail folder deletion not supported.");
+            throw new NotSupportedException("Proton Mail does not support folder deletion.");
         }
 
         #endregion
