@@ -1372,7 +1372,6 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
                 }
                 else
                 {
-                    // This is a top-level folder, rename in the namespace
                     var personalNamespaces = ImapClient.PersonalNamespaces;
                     if (personalNamespaces is null || personalNamespaces.Count == 0)
                     {
