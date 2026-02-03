@@ -1524,7 +1524,6 @@ ORDER BY Date DESC, FolderId ASC, Message.Id DESC";
                 var oldPathLike = oldPathPrefix + "%";
 
                 // Update messages in the renamed folder and all its subfolders directly in the database
-                // This is much more efficient than loading all messages into memory
                 var sql = @"
                     UPDATE Message
                     SET Path = CASE
