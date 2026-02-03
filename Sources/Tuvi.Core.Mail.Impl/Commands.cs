@@ -540,7 +540,7 @@ namespace Tuvi.Core.Mail.Impl
     internal class DeleteFolderCommand : ReceiverCommand<bool>
     {
         public DeleteFolderCommand(ReceiverService receiver, Folder folder)
-            : base(receiver, folder)
+            : base(receiver, folder ?? throw new ArgumentNullException(nameof(folder)))
         {
         }
 
