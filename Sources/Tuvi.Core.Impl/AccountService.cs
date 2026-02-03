@@ -383,6 +383,23 @@ namespace Tuvi.Core.Impl
             return newFolder;
         }
 
+        public async Task DeleteFolderAsync(Folder folder, CancellationToken cancellationToken = default)
+        {
+            if (folder is null)
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+
+            // Delete from server
+            await MailBox.DeleteFolderAsync(folder, cancellationToken).ConfigureAwait(false);
+
+            // Delete from local storage
+            await DataStorage.DeleteFolderAsync(Account.Email, folder.FullName, cancellationToken).ConfigureAwait(false);
+
+            // Update folder structure cache
+            await UpdateFolderStructureAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         public Task PermanentDeleteMessageAsync(Message message, CancellationToken cancellationToken)
         {
             if (message is null)

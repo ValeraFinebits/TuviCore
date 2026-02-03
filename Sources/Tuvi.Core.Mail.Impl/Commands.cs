@@ -537,6 +537,29 @@ namespace Tuvi.Core.Mail.Impl
         }
     }
 
+    internal class DeleteFolderCommand : ReceiverCommand<bool>
+    {
+        public DeleteFolderCommand(ReceiverService receiver, Folder folder)
+            : base(receiver, folder)
+        {
+            if (folder is null)
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+        }
+
+        protected override async Task<bool> ExecuteAsync(CancellationToken cancellationToken)
+        {
+            await Receiver.DeleteFolderAsync(FolderPath, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+
+        protected override string GetUniqueCommandIdentifier(string email)
+        {
+            return this.GetType().Name + email + FolderPath.FullName;
+        }
+    }
+
     internal class FlagMessagesCommand : ReceiverCommand<bool>
     {
         private IList<uint> UIDs;
