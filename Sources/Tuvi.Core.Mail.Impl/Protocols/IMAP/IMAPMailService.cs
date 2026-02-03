@@ -1382,7 +1382,6 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
                     var personalFolder = await ImapClient.GetFolderAsync(personalNamespace.Path, cancellationToken).ConfigureAwait(false);
                     await imapFolder.RenameAsync(personalFolder, newName, cancellationToken).ConfigureAwait(false);
                 }
-                // After RenameAsync, MailKit updates imapFolder.FullName to the new canonical name
                 var renamedFullName = imapFolder.FullName;
                 var renamedImapFolder = await ImapClient.GetFolderAsync(renamedFullName, cancellationToken).ConfigureAwait(false);
                 await renamedImapFolder.StatusAsync(StatusItems.Unread | StatusItems.Count, cancellationToken).ConfigureAwait(false);
