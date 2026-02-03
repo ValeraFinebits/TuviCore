@@ -1521,30 +1521,27 @@ ORDER BY Date DESC, FolderId ASC, Message.Id DESC";
                 var oldPath = CreatePath(email, oldFolderName);
                 var newPath = CreatePath(email, newFolderName);
                 var oldPathPrefix = oldPath + "\\";
+                var oldPathLike = oldPathPrefix + "%";
 
-                // Update messages in the renamed folder and all its subfolders
-                // Get all messages for the account and filter by path
-                var allMessages = connection.Table<Entities.Message>().ToList(ct);
-                var messages = allMessages.Where(x => x.Path == oldPath || x.Path.StartsWith(oldPathPrefix, StringComparison.Ordinal)).ToList();
+                // Update messages in the renamed folder and all its subfolders directly in the database
+                // This is much more efficient than loading all messages into memory
+                var sql = @"
+                    UPDATE Message
+                    SET Path = CASE
+                        WHEN Path = ? THEN ?
+                        WHEN Path LIKE ? THEN ? || substr(Path, ?)
+                    END
+                    WHERE Path = ? OR Path LIKE ?";
 
-                foreach (var message in messages)
-                {
-                    // Replace the old folder path prefix with the new one
-                    if (message.Path == oldPath)
-                    {
-                        message.Path = newPath;
-                    }
-                    else if (message.Path.StartsWith(oldPathPrefix, StringComparison.Ordinal))
-                    {
-                        message.Path = newPath + message.Path.Substring(oldPath.Length);
-                    }
-                }
-
-                // Persist all updated messages in a single batch operation
-                if (messages.Count > 0)
-                {
-                    connection.UpdateAll(messages);
-                }
+                connection.Execute(
+                    sql,
+                    oldPath,              // WHEN Path = ?
+                    newPath,              // THEN ?
+                    oldPathLike,          // WHEN Path LIKE ?
+                    newPath,              // THEN ?
+                    oldPath.Length + 1,   // || substr(Path, ?)
+                    oldPath,              // WHERE Path = ?
+                    oldPathLike);         // OR Path LIKE ?
             }, cancellationToken);
         }
 
