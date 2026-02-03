@@ -1363,7 +1363,6 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
             async Task<Folder> DoRenameFolderAsync()
             {
                 var imapFolder = await ImapClient.GetFolderAsync(folder.FullName, cancellationToken).ConfigureAwait(false);
-                // Get the parent folder and determine the new name
                 var parentFolder = imapFolder.ParentFolder;
                 if (parentFolder != null)
                 {
