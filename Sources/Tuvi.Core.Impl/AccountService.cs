@@ -390,6 +390,11 @@ namespace Tuvi.Core.Impl
                 throw new ArgumentNullException(nameof(folder));
             }
 
+            if (folder.IsInbox || folder.IsSent || folder.IsTrash || folder.IsDraft || folder.IsJunk || folder.IsImportant || folder.IsAll)
+            {
+                throw new InvalidOperationException($"Cannot delete special folder: {folder.FullName}");
+            }
+
             await MailBox.DeleteFolderAsync(folder, cancellationToken).ConfigureAwait(false);
 
             await DataStorage.DeleteFolderAsync(Account.Email, folder.FullName, cancellationToken).ConfigureAwait(false);

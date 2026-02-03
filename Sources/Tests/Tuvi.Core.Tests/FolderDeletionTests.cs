@@ -349,5 +349,61 @@ namespace Tuvi.Core.Tests
             Assert.ThrowsAsync<NotSupportedException>(async () =>
                 await core.DeleteFolderAsync(decAccount.Email, testFolder).ConfigureAwait(false));
         }
+
+        [Test]
+        public void DeleteFolderAsyncSpecialFolderShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var accountsList = new List<Account>() { TestAccountInfo.GetAccount() };
+            var securityManagerMock = InitMockSecurityManager();
+            var mailBoxFactoryMock = new Mock<IMailBoxFactory>();
+            var mailServerTesterMock = new Mock<IMailServerTester>();
+            var dataStorageMock = new Mock<IDataStorage>();
+            var mailBoxMock = new Mock<IMailBox>();
+            var backupManager = new Mock<IBackupManager>();
+            var credentialsManager = new Mock<ICredentialsManager>();
+            var decStorageClient = new Mock<IDecStorageClient>();
+
+            dataStorageMock.Setup(a => a.GetAccountsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(accountsList);
+            dataStorageMock.Setup(a => a.GetAccountAsync(It.IsAny<EmailAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(accountsList[0]);
+
+            mailBoxMock.Setup(m => m.GetFoldersStructureAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Folder>());
+            mailBoxMock.Setup(m => m.GetDefaultInboxFolderAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Folder("INBOX", FolderAttributes.Inbox));
+
+            mailBoxFactoryMock.Setup(f => f.CreateMailBox(It.IsAny<Account>()))
+                .Returns(mailBoxMock.Object);
+
+            using var core = TuviCoreCreator.CreateTuviMailCore(
+                mailBoxFactoryMock.Object,
+                mailServerTesterMock.Object,
+                dataStorageMock.Object,
+                securityManagerMock.Object,
+                backupManager.Object,
+                credentialsManager.Object,
+                new ImplementationDetailsProvider("Test seed", "Test.Package", "backup@test"),
+                decStorageClient.Object);
+
+            // Test each special folder type
+            var inboxFolder = new Folder("INBOX", FolderAttributes.Inbox);
+            var sentFolder = new Folder("Sent", FolderAttributes.Sent);
+            var trashFolder = new Folder("Trash", FolderAttributes.Trash);
+            var draftFolder = new Folder("Drafts", FolderAttributes.Draft);
+            var junkFolder = new Folder("Spam", FolderAttributes.Junk);
+
+            // Act & Assert
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await core.DeleteFolderAsync(accountsList[0].Email, inboxFolder).ConfigureAwait(false));
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await core.DeleteFolderAsync(accountsList[0].Email, sentFolder).ConfigureAwait(false));
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await core.DeleteFolderAsync(accountsList[0].Email, trashFolder).ConfigureAwait(false));
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await core.DeleteFolderAsync(accountsList[0].Email, draftFolder).ConfigureAwait(false));
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await core.DeleteFolderAsync(accountsList[0].Email, junkFolder).ConfigureAwait(false));
+        }
     }
 }
