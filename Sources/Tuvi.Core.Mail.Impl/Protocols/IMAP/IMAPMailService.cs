@@ -1367,7 +1367,6 @@ namespace Tuvi.Core.Mail.Impl.Protocols.IMAP
                 var parentFolder = imapFolder.ParentFolder;
                 if (parentFolder != null)
                 {
-                    // Rename using parent folder and new name
                     await imapFolder.RenameAsync(parentFolder, newName, cancellationToken).ConfigureAwait(false);
                 }
                 else
