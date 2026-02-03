@@ -611,23 +611,23 @@ namespace Tuvi.Core.Mail.Impl
 
     internal class DeleteFolderCommand : ReceiverCommand<bool>
     {
-        private Folder Folder;
+        private readonly Folder _folder;
 
         public DeleteFolderCommand(ReceiverService receiver, Folder folder)
             : base(receiver, folder)
         {
-            Folder = folder;
+            _folder = folder;
         }
 
         protected async override Task<bool> ExecuteAsync(CancellationToken cancellationToken)
         {
-            await Receiver.DeleteFolderAsync(Folder, cancellationToken).ConfigureAwait(false);
+            await Receiver.DeleteFolderAsync(_folder, cancellationToken).ConfigureAwait(false);
             return true;
         }
 
         protected override string GetUniqueCommandIdentifier(string email)
         {
-            return this.GetType().Name + email + Folder.FullName;
+            return this.GetType().Name + email + _folder.FullName;
         }
     }
 }
