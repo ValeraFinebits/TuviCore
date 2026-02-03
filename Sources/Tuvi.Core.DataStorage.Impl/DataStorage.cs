@@ -1538,7 +1538,12 @@ ORDER BY Date DESC, FolderId ASC, Message.Id DESC";
                     {
                         message.Path = newPath + message.Path.Substring(oldPath.Length);
                     }
-                    connection.Update(message);
+                }
+
+                // Persist all updated messages in a single batch operation
+                if (messages.Count > 0)
+                {
+                    connection.UpdateAll(messages);
                 }
             }, cancellationToken);
         }

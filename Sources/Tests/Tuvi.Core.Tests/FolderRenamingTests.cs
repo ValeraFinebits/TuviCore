@@ -202,6 +202,8 @@ namespace Tuvi.Core.Tests
             // Act & Assert
             Assert.ThrowsAsync<ArgumentException>(async () =>
                 await core.RenameFolderAsync(accountsList[0].Email, testFolder, "").ConfigureAwait(false));
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await core.RenameFolderAsync(accountsList[0].Email, testFolder, "   ").ConfigureAwait(false));
         }
 
         [Test]
