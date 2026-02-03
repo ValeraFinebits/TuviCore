@@ -390,13 +390,10 @@ namespace Tuvi.Core.Impl
                 throw new ArgumentNullException(nameof(folder));
             }
 
-            // Delete from server
             await MailBox.DeleteFolderAsync(folder, cancellationToken).ConfigureAwait(false);
 
-            // Delete from local storage
             await DataStorage.DeleteFolderAsync(Account.Email, folder.FullName, cancellationToken).ConfigureAwait(false);
 
-            // Update folder structure cache
             await UpdateFolderStructureAsync(cancellationToken).ConfigureAwait(false);
         }
 

@@ -542,10 +542,6 @@ namespace Tuvi.Core.Mail.Impl
         public DeleteFolderCommand(ReceiverService receiver, Folder folder)
             : base(receiver, folder)
         {
-            if (folder is null)
-            {
-                throw new ArgumentNullException(nameof(folder));
-            }
         }
 
         protected override async Task<bool> ExecuteAsync(CancellationToken cancellationToken)

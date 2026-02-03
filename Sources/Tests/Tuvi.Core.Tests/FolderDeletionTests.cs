@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -33,7 +32,6 @@ using Tuvi.Core.Mail;
 namespace Tuvi.Core.Tests
 {
     [TestFixture]
-    [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Test methods use underscores for readability")]
     public class FolderDeletionTests
     {
         private static Mock<ISecurityManager> InitMockSecurityManager()
@@ -45,7 +43,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public async Task DeleteFolderAsync_ValidInput_ShouldDeleteFolder()
+        public async Task DeleteFolderAsyncValidInputShouldDeleteFolder()
         {
             // Arrange
             var accountsList = new List<Account>() { TestAccountInfo.GetAccount() };
@@ -108,7 +106,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public void DeleteFolderAsync_NullAccountEmail_ShouldThrowArgumentNullException()
+        public void DeleteFolderAsyncNullAccountEmailShouldThrowArgumentNullException()
         {
             // Arrange
             var securityManagerMock = InitMockSecurityManager();
@@ -137,7 +135,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public void DeleteFolderAsync_NullFolder_ShouldThrowArgumentNullException()
+        public void DeleteFolderAsyncNullFolderShouldThrowArgumentNullException()
         {
             // Arrange
             var accountsList = new List<Account>() { TestAccountInfo.GetAccount() };
@@ -178,7 +176,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public async Task DeleteFolderAsync_UpdatesFolderStructure()
+        public async Task DeleteFolderAsyncUpdatesFolderStructure()
         {
             // Arrange
             var accountsList = new List<Account>() { TestAccountInfo.GetAccount() };
@@ -239,7 +237,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public void DeleteFolderAsync_ProtonMailAccount_ShouldThrowNotSupportedException()
+        public void DeleteFolderAsyncProtonMailAccountShouldThrowNotSupportedException()
         {
             // Arrange
             var protonAccount = new Account
@@ -296,7 +294,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public void DeleteFolderAsync_DecAccount_ShouldThrowNotSupportedException()
+        public void DeleteFolderAsyncDecAccountShouldThrowNotSupportedException()
         {
             // Arrange
             var decAccount = new Account
