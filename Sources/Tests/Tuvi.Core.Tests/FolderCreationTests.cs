@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -33,7 +32,6 @@ using Tuvi.Core.Mail;
 namespace Tuvi.Core.Tests
 {
     [TestFixture]
-    [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Test methods use underscores for readability")]
     public class FolderCreationTests
     {
         private static Mock<ISecurityManager> InitMockSecurityManager()
@@ -45,7 +43,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public async Task CreateFolderAsync_ValidInput_ShouldCreateFolder()
+        public async Task CreateFolderAsyncValidInputShouldCreateFolder()
         {
             // Arrange
             var accountsList = new List<Account>() { TestAccountInfo.GetAccount() };
@@ -106,7 +104,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public void CreateFolderAsync_NullAccountEmail_ShouldThrowArgumentNullException()
+        public void CreateFolderAsyncNullAccountEmailShouldThrowArgumentNullException()
         {
             // Arrange
             var securityManagerMock = InitMockSecurityManager();
@@ -133,7 +131,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public void CreateFolderAsync_EmptyFolderName_ShouldThrowArgumentException()
+        public void CreateFolderAsyncEmptyFolderNameShouldThrowArgumentException()
         {
             // Arrange
             var accountsList = new List<Account>() { TestAccountInfo.GetAccount() };
@@ -177,7 +175,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public async Task CreateFolderAsync_UpdatesFolderStructure()
+        public async Task CreateFolderAsyncUpdatesFolderStructure()
         {
             // Arrange
             var accountsList = new List<Account>() { TestAccountInfo.GetAccount() };
@@ -236,7 +234,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public void CreateFolderAsync_ProtonMailAccount_ShouldThrowNotSupportedException()
+        public void CreateFolderAsyncProtonMailAccountShouldThrowNotSupportedException()
         {
             // Arrange
             var protonAccount = new Account
@@ -291,7 +289,7 @@ namespace Tuvi.Core.Tests
         }
 
         [Test]
-        public void CreateFolderAsync_DecAccount_ShouldThrowNotSupportedException()
+        public void CreateFolderAsyncDecAccountShouldThrowNotSupportedException()
         {
             // Arrange
             var decAccount = new Account
