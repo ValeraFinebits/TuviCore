@@ -402,6 +402,32 @@ namespace Tuvi.Core.Impl
             await UpdateFolderStructureAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task<Folder> RenameFolderAsync(Folder folder, string newName, CancellationToken cancellationToken = default)
+        {
+            if (folder is null)
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                throw new ArgumentException("Folder name cannot be empty", nameof(newName));
+            }
+
+            if (folder.IsInbox || folder.IsSent || folder.IsTrash || folder.IsDraft || folder.IsJunk || folder.IsImportant || folder.IsAll)
+            {
+                throw new InvalidOperationException($"Cannot rename special folder: {folder.FullName}");
+            }
+
+            var renamedFolder = await MailBox.RenameFolderAsync(folder, newName, cancellationToken).ConfigureAwait(false);
+            renamedFolder.AccountEmail = Account.Email;
+            renamedFolder.AccountId = Account.Id;
+
+            await UpdateFolderStructureAsync(cancellationToken).ConfigureAwait(false);
+
+            return renamedFolder;
+        }
+
         public Task PermanentDeleteMessageAsync(Message message, CancellationToken cancellationToken)
         {
             if (message is null)

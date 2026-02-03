@@ -1131,6 +1131,11 @@ namespace Tuvi.Proton
             throw new NotSupportedException("Proton Mail does not support folder deletion.");
         }
 
+        public Task<Folder> RenameFolderAsync(Folder folder, string newName, CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException("Proton Mail does not support folder renaming.");
+        }
+
         #endregion
     }
 }
