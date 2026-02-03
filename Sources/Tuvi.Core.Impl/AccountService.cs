@@ -424,7 +424,6 @@ namespace Tuvi.Core.Impl
             renamedFolder.AccountEmail = Account.Email;
             renamedFolder.AccountId = Account.Id;
 
-            // Update message paths in local storage before updating folder structure
             await DataStorage.UpdateFolderPathAsync(Account.Email, oldFolderName, renamedFolder.FullName, cancellationToken).ConfigureAwait(false);
 
             await UpdateFolderStructureAsync(cancellationToken).ConfigureAwait(false);
